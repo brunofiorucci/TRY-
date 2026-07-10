@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<title>TRY+ · Entrenamiento de Rugby</title>
+<meta name="theme-color" content="#0E1912" />
+<meta name="description" content="TRY+ — Entrenamiento de rugby: sesiones por posición, biblioteca de ejercicios, progreso y estadísticas de partidos." />
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRY+">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#0E1912; --bg-soft:#122016; --card:#17251C; --card-alt:#1D2E22; --line:#2A3B2E;
+    --chalk:#F1EFE6; --chalk-dim:#AEBCAF; --muted:#7E8C80; --ochre:#C9862F; --ochre-bright:#E4A94F;
+    --ochre-dim:#4A3A22; --sky:#6FA1C9; --sky-dim:#233846; --danger:#C0563F;
+    --font-display: Georgia, 'Times New Roman', serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', monospace;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; background:var(--bg); overscroll-behavior-y:none; }
+  body { font-family: var(--font-body); }
+  button { font-family: inherit; border:none; background:none; cursor:pointer; padding:0; color:inherit; -webkit-user-select:none; user-select:none; }
+  input { font-family: inherit; }
+  ul { margin:0; }
+  a { color: inherit; }
+  ::-webkit-scrollbar{ display:none; }
+  .flex{display:flex}
+  .flex-col{flex-direction:column}
+  .items-center{align-items:center}
+  .items-start{align-items:flex-start}
+  .justify-between{justify-content:space-between}
+  .justify-center{justify-content:center}
+  .justify-around{justify-content:space-around}
+  .flex-1{flex:1 1 0%}
+  .flex-shrink-0{flex-shrink:0}
+  .flex-wrap{flex-wrap:wrap}
+  .grid{display:grid}
+  .grid-cols-2{grid-template-columns:repeat(2,1fr)}
+  .grid-cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid-cols-4{grid-template-columns:repeat(4,1fr)}
+  .grid-cols-7{grid-template-columns:repeat(7,1fr)}
+  .rounded-full{border-radius:999px}
+  .rounded-lg{border-radius:10px}
+  .rounded-xl{border-radius:14px}
+  .rounded-2xl{border-radius:18px}
+  .rounded-t-3xl{border-radius:22px 22px 0 0}
+  .overflow-hidden{overflow:hidden}
+  .overflow-x-auto{overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+  .overflow-y-auto{overflow-y:auto}
+  .whitespace-nowrap{white-space:nowrap}
+  .text-center{text-align:center}
+  .text-left{text-align:left}
+  .w-full{width:100%}
+  .max-w-md{max-width:448px}
+  .mx-auto{margin-left:auto;margin-right:auto}
+  .fixed{position:fixed}
+  .absolute{position:absolute}
+  .relative{position:relative}
+  .inset-0{top:0;left:0;right:0;bottom:0}
+  .outline-none{outline:none}
+  .btn-reset{-webkit-appearance:none;appearance:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+"use strict";
+
+/* ---------------------------------------------------------------------- */
+/* COLORS / ICONS                                                          */
+/* ---------------------------------------------------------------------- */
+var C = {
+  bg: "#0E1912", bgSoft: "#122016", card: "#17251C", cardAlt: "#1D2E22", line: "#2A3B2E",
+  chalk: "#F1EFE6", chalkDim: "#AEBCAF", muted: "#7E8C80",
+  ochre: "#C9862F", ochreBright: "#E4A94F", ochreDim: "#4A3A22",
+  sky: "#6FA1C9", skyDim: "#233846", danger: "#C0563F"
+};
+
+var ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>',
+  list: '<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h4"/>',
+  play: '<circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/>',
+  trending: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/>',
+  check: '<path d="M5 12l5 5 9-9"/>',
+  x: '<path d="M6 6l12 12"/><path d="M18 6L6 18"/>',
+  plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  flame: '<path d="M12 2c1 4-4 5-4 9a4 4 0 0 0 8 0c0-1-.5-2-1-3 1 0 3 1 3 4a6 6 0 0 1-12 0c0-5 3-6 6-10z"/>',
+  trophy: '<path d="M8 4h8v4a4 4 0 0 1-8 0V4z"/><path d="M6 4H4v2a4 4 0 0 0 4 4"/><path d="M18 4h2v2a4 4 0 0 1-4 4"/><path d="M10 15h4v3h-4z"/><path d="M8 21h8"/>',
+  chevronDown: '<path d="M6 9l6 6 6-6"/>',
+  rotateCcw: '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>',
+  target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+  bookOpen: '<path d="M12 6c-2-1.5-5-2-8-1v13c3-1 6-.5 8 1 2-1.5 5-2 8-1V5c-3-1-6-.5-8 1z"/>',
+  lightbulb: '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>',
+  droplet: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  heartPulse: '<path d="M20 8.6c0-2.5-2-4.4-4.4-4.4-1.6 0-3 .9-3.6 2.1-.6-1.2-2-2.1-3.6-2.1C6 4.2 4 6.1 4 8.6 4 14 12 20 12 20s8-6 8-11.4z"/><path d="M7 12h2l1.5-3 2 6 1.5-3H16"/>',
+  backpack: '<path d="M8 8V6a4 4 0 0 1 8 0v2"/><path d="M6 8h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/><path d="M9 12h6"/><path d="M9 21v-5h6v5"/>',
+  scroll: '<path d="M8 3h11v14a2 2 0 0 1-2 2H8"/><path d="M8 3a2 2 0 0 0-2 2v14a2 2 0 0 0 4 0"/><path d="M11 8h5"/><path d="M11 12h5"/>',
+  download: '<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+  upload: '<path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/>',
+  database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>'
+};
+function icon(name, size, color) {
+  size = size || 16; color = color || "currentColor";
+  var body = ICONS[name] || "";
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0">' + body + '</svg>';
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+/* ---------------------------------------------------------------------- */
+/* DATA                                                                    */
+/* ---------------------------------------------------------------------- */
+var POSITIONS = [
+  { num: 1, name: "Pilar izquierdo", group: "Delantero", x: 35, y: 80, desc: "Sostiene el lado del apoyo (loosehead) en el scrum. Motor de empuje y ancla en el line-out." },
+  { num: 2, name: "Hooker", group: "Delantero", x: 50, y: 84, desc: "Talona la pelota en el scrum y lanza en el line-out. Suele liderar el pack." },
+  { num: 3, name: "Pilar derecho", group: "Delantero", x: 65, y: 80, desc: "Sostiene el lado cerrado (tighthead) del scrum. Fuerza pura y estabilidad." },
+  { num: 4, name: "Segunda línea", group: "Delantero", x: 40, y: 69, desc: "Motor del scrum y saltador principal del line-out." },
+  { num: 5, name: "Segunda línea", group: "Delantero", x: 60, y: 69, desc: "Compañero de segunda línea. Salta, empuja y suma metros en contacto." },
+  { num: 6, name: "Ala ciego", group: "Delantero", x: 26, y: 58, desc: "Primer tackleador del lado cerrado. Constancia y volumen de juego." },
+  { num: 7, name: "Ala abierto", group: "Delantero", x: 74, y: 58, desc: "Especialista del breakdown. Caza pelotas (jackal) y presiona al rival." },
+  { num: 8, name: "Octavo", group: "Delantero", x: 50, y: 51, desc: "Une el pack con los backs. Sale del scrum y rompe líneas con potencia." },
+  { num: 9, name: "Medio scrum", group: "Back", x: 50, y: 41, desc: "Distribuye desde el ruck y el scrum. Marca el ritmo del equipo." },
+  { num: 10, name: "Apertura", group: "Back", x: 50, y: 29, desc: "Director táctico. Decide cuándo patear, pasar o quebrar la línea." },
+  { num: 11, name: "Wing", group: "Back", x: 13, y: 21, desc: "Finalizador veloz en una punta del ataque." },
+  { num: 12, name: "Centro interno", group: "Back", x: 37, y: 19, desc: "Rompe la primera línea defensiva con potencia y buen pase." },
+  { num: 13, name: "Centro externo", group: "Back", x: 63, y: 19, desc: "Genera espacios con velocidad y lectura del juego." },
+  { num: 14, name: "Wing", group: "Back", x: 87, y: 21, desc: "Finalizador veloz en la otra punta del ataque." },
+  { num: 15, name: "Fullback", group: "Back", x: 50, y: 9, desc: "Última línea defensiva. Inicia el contraataque desde el fondo." }
+];
+
+var CAT_EMOJI = {
+  "Scrum": "🏉", "Line-out": "🙌", "Tackleo": "💥", "Pase y manejo": "🤾",
+  "Patada": "🦵", "Ruck y Maul": "🔁", "Evasión y espacios": "🏃", "Físico y contacto": "🏋️"
+};
+
+var EXERCISES = [
+  { id: "e1", name: "Empuje en pareja contra tackle bag", cat: "Scrum", dur: 15, foco: "Delantero", dif: 2, desc: "Técnica de liga (bind) y empuje coordinado, foco en postura baja." },
+  { id: "e2", name: "Scrum 3v3 con secuencia de golpe", cat: "Scrum", dur: 20, foco: "Delantero", dif: 3, desc: "Progresión de 'engage': liga, golpe y empuje sostenido." },
+  { id: "e3", name: "Postura y liga individual", cat: "Scrum", dur: 10, foco: "Delantero", dif: 1, desc: "Trabajo de posición baja y columna neutra frente al espejo o pared." },
+  { id: "e4", name: "Saltos y levantamiento estático", cat: "Line-out", dur: 15, foco: "Delantero", dif: 2, desc: "Coordinación entre saltador y levantadores en el aire." },
+  { id: "e5", name: "Lanzamiento a los tres puntos", cat: "Line-out", dur: 15, foco: "Delantero", dif: 2, desc: "Precisión de tiro del hooker: frente, medio y fondo." },
+  { id: "e6", name: "Line-out en movimiento con señas", cat: "Line-out", dur: 20, foco: "Delantero", dif: 3, desc: "Variantes de jugada con desplazamiento y códigos." },
+  { id: "e7", name: "Tackle bajo en parejas", cat: "Tackleo", dur: 15, foco: "Todos", dif: 1, desc: "Técnica de cabeza atrás y envolver, sobre colchoneta." },
+  { id: "e8", name: "Tackle de contención 1v1", cat: "Tackleo", dur: 15, foco: "Todos", dif: 2, desc: "Trabajo en grid reducido, foco en el ángulo de acercamiento." },
+  { id: "e9", name: "Doble tackle: chop + jackal", cat: "Tackleo", dur: 20, foco: "Todos", dif: 3, desc: "Secuencia de derribo bajo y disputa inmediata de la pelota." },
+  { id: "e10", name: "Tackleo lateral con cambio de ángulo", cat: "Tackleo", dur: 15, foco: "Todos", dif: 2, desc: "Desplazamiento defensivo y ajuste del ángulo de placaje." },
+  { id: "e11", name: "Pase largo en parejas", cat: "Pase y manejo", dur: 10, foco: "Todos", dif: 1, desc: "Distancia creciente, foco en la rotación de la pelota." },
+  { id: "e12", name: "Circuito de pase en movimiento", cat: "Pase y manejo", dur: 15, foco: "Todos", dif: 2, desc: "Pase 3 contra 0 a máxima velocidad de carrera." },
+  { id: "e13", name: "Pase bajo presión", cat: "Pase y manejo", dur: 15, foco: "Todos", dif: 2, desc: "Con dos defensores pasivos cerrando el espacio." },
+  { id: "e14", name: "Ruedas de pase (unit skills)", cat: "Pase y manejo", dur: 20, foco: "Back", dif: 3, desc: "Cambios de dirección y manejo a alta velocidad." },
+  { id: "e15", name: "Patada a los palos", cat: "Patada", dur: 15, foco: "Todos", dif: 2, desc: "Ángulos variados de cancha, foco en la rutina de pateo." },
+  { id: "e16", name: "Despeje bajo presión de tiempo", cat: "Patada", dur: 15, foco: "Back", dif: 2, desc: "Recepción y despeje con un contador simulando presión rival." },
+  { id: "e17", name: "Grubber y chip sobre la defensa", cat: "Patada", dur: 15, foco: "Back", dif: 3, desc: "Patadas cortas para superar la línea defensiva." },
+  { id: "e18", name: "Limpieza de ruck en parejas", cat: "Ruck y Maul", dur: 15, foco: "Delantero", dif: 2, desc: "Remoción del jackal manteniendo la pelota propia." },
+  { id: "e19", name: "Maul estático con progresión", cat: "Ruck y Maul", dur: 15, foco: "Delantero", dif: 2, desc: "Empuje coordinado manteniendo la ligazón del grupo." },
+  { id: "e20", name: "Ruck dinámico tras tackle en serie", cat: "Ruck y Maul", dur: 20, foco: "Todos", dif: 3, desc: "Llegadas rápidas y limpieza continua, punto tras punto." },
+  { id: "e21", name: "Líneas de corrida en ataque", cat: "Evasión y espacios", dur: 15, foco: "Back", dif: 2, desc: "Trabajo de apoyo y profundidad para recibir el pase." },
+  { id: "e22", name: "Quiebre 1v1 en espacio reducido", cat: "Evasión y espacios", dur: 15, foco: "Back", dif: 2, desc: "Footwork y cambio de ritmo frente a un defensor." },
+  { id: "e23", name: "Ataque 3 contra 2", cat: "Evasión y espacios", dur: 20, foco: "Todos", dif: 3, desc: "Superioridad numérica y decisión de pase final." },
+  { id: "e24", name: "Circuito de potencia y contacto", cat: "Físico y contacto", dur: 20, foco: "Todos", dif: 2, desc: "Estaciones de trineo, tackle bag y arrastre." },
+  { id: "e25", name: "Acondicionamiento tipo Bronco", cat: "Físico y contacto", dur: 20, foco: "Todos", dif: 3, desc: "Test intermitente de resistencia específica del rugby." },
+  { id: "e26", name: "Movilidad y activación", cat: "Físico y contacto", dur: 10, foco: "Todos", dif: 1, desc: "Rutina previa al entrenamiento para prevenir lesiones." }
+];
+
+var CATEGORIES = Object.keys(CAT_EMOJI);
+
+var DEFAULT_PROFILE = {
+  positionNum: 9, name: "", weeklyGoal: 3,
+  weeklyPlan: ["Descanso", "Técnica", "Físico", "Descanso", "Técnica", "Partido", "Descanso"]
+};
+
+var DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+var PLAN_TYPES = ["Descanso", "Técnica", "Físico", "Partido"];
+var PLAN_EMOJI = { "Descanso": "😴", "Técnica": "🎯", "Físico": "🏋️", "Partido": "🏉" };
+
+var TIPS = [
+  "Llegá 10 minutos antes para hacer una activación dinámica antes de tocar la pelota.",
+  "En el tackle, la cabeza siempre atrás y los ojos abiertos: seguridad primero.",
+  "Un buen pase empieza en los pies: encará al receptor antes de soltar la pelota.",
+  "Hidratate durante todo el día, no solo en el entrenamiento.",
+  "El scrum se gana con la postura, no solo con la fuerza: columna neutra siempre.",
+  "En el ruck, llegá bajo y rápido: el primero en la pelota manda.",
+  "Practicá pases para los dos lados: un jugador parejo vale el doble.",
+  "El descanso también es entrenamiento. Dormí bien antes de un partido.",
+  "En defensa, hablá con tus compañeros: la comunicación cierra espacios.",
+  "Filmate o pedí feedback: ver tu propio tackle mejora la técnica más rápido."
+];
+
+var GLOSSARY = [
+  { term: "Ruck", def: "Disputa de la pelota en el piso entre jugadores de pie tras un tackle." },
+  { term: "Maul", def: "Agrupación de jugadores en pie que avanza sosteniendo la pelota sin que toque el suelo." },
+  { term: "Scrum", def: "Formación de ocho jugadores por equipo que disputan la pelota tras una infracción menor." },
+  { term: "Line-out", def: "Reinicio de juego cuando la pelota sale por el lateral (touch); se lanza entre dos filas de jugadores." },
+  { term: "Knock-on", def: "Pérdida de la pelota hacia adelante con la mano o el brazo. Es infracción." },
+  { term: "Off-side", def: "Posición adelantada respecto a la pelota o un compañero que participa en la jugada." },
+  { term: "Try", def: "Apoyar la pelota en el in-goal rival. Vale 5 puntos y da derecho a conversión." },
+  { term: "Conversión", def: "Patada a los palos tras un try, desde una línea paralela al punto de apoyo. Vale 2 puntos." },
+  { term: "Penal", def: "Patada a los palos tras una infracción del rival. Vale 3 puntos." },
+  { term: "Drop goal", def: "Patada al arco durante el juego, pateando la pelota justo después de picar en el piso. Vale 3 puntos." },
+  { term: "Touch", def: "El lateral de la cancha; cuando la pelota sale por ahí se reinicia con line-out." },
+  { term: "In-goal", def: "El área detrás de la línea de try, donde se apoya la pelota para anotar." },
+  { term: "Breakdown", def: "El punto de contacto donde se disputa la posesión tras un tackle (ruck o maul)." },
+  { term: "Turnover", def: "Recuperación de la pelota que estaba en poder del equipo rival." },
+  { term: "Ventaja", def: "El árbitro deja seguir el juego tras una infracción si el equipo no infractor se beneficia." },
+  { term: "Grubber", def: "Patada rasante y corta para superar la línea defensiva." }
+];
+
+var RULES = [
+  { title: "Puntaje", items: ["Try: 5 puntos", "Conversión: 2 puntos", "Penal: 3 puntos", "Drop goal: 3 puntos"] },
+  { title: "Duración", items: ["Dos tiempos de 40 minutos", "Descanso de 10 minutos entre tiempos"] },
+  { title: "Jugadores", items: ["15 titulares por equipo", "Hasta 8 suplentes según la competencia", "Reemplazos ilimitados en algunas categorías juveniles"] },
+  { title: "Reinicios básicos", items: ["Scrum: por infracciones menores como knock-on", "Line-out: cuando la pelota sale por el touch", "Drop-out: 22 metros propios, tras un try anulado o pelota muerta"] }
+];
+
+var WARMUP = [
+  "Trote suave 5 minutos + movilidad de tobillos, caderas y hombros.",
+  "Estiramientos dinámicos: zancadas, skipping, talones a la cola.",
+  "Activación de cuello y trapecios antes de cualquier contacto (clave para el scrum).",
+  "Pases y recepciones livianas para activar la coordinación.",
+  "Sprints cortos progresivos (50%, 70%, 90%) antes de jugadas de máxima intensidad."
+];
+
+var INJURY_PREVENTION = [
+  "Fortalecé el cuello: reduce el riesgo en el scrum y en el tackle.",
+  "Trabajá estabilidad de tobillos y rodillas con ejercicios unipodales.",
+  "Respetá el protocolo de vuelta al juego tras una conmoción cerebral: nunca vuelvas el mismo día.",
+  "Usá protector bucal en todos los entrenamientos con contacto, no solo en partidos.",
+  "No saltees la vuelta a la calma: estiramiento suave y foam roller después de entrenar."
+];
+
+var NUTRITION = [
+  "Hidratate durante todo el día; no esperes a tener sed para tomar agua.",
+  "Comé carbohidratos de calidad 2-3 horas antes de entrenar o jugar (pasta, arroz, papa).",
+  "Después del entrenamiento, combiná proteína e hidratos dentro de los primeros 45 minutos.",
+  "En días de partido, evitá comidas pesadas o muy grasosas antes de salir a la cancha.",
+  "Reponé electrolitos en entrenamientos largos o con mucho calor."
+];
+
+var GEAR = [
+  "Botines con tapones adecuados a la superficie (campo natural o sintético).",
+  "Protector bucal, obligatorio en la mayoría de las competencias.",
+  "Pelota ovalada reglamentaria para practicar pases y patadas.",
+  "Hombreras (opcional) para entrenamientos de contacto intenso.",
+  "Vendas o cinta para tobillos y dedos si tenés antecedentes de lesión."
+];
+
+/* ---------------------------------------------------------------------- */
+/* HELPERS                                                                 */
+/* ---------------------------------------------------------------------- */
+function tierFor(total) {
+  if (total >= 50) return { name: "Élite", min: 50, next: null };
+  if (total >= 30) return { name: "Profesional", min: 30, next: 50 };
+  if (total >= 15) return { name: "Semi-Pro", min: 15, next: 30 };
+  if (total >= 5) return { name: "Amateur", min: 5, next: 15 };
+  return { name: "Novato", min: 0, next: 5 };
+}
+function weekKey(d) {
+  var date = new Date(d);
+  var onejan = new Date(date.getFullYear(), 0, 1);
+  var week = Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  return date.getFullYear() + "-" + week;
+}
+function daysAgo(n) {
+  var d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+function fmtDate(iso) {
+  var d = new Date(iso);
+  return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
+}
+function posByNum(n) {
+  for (var i = 0; i < POSITIONS.length; i++) if (POSITIONS[i].num === n) return POSITIONS[i];
+  return POSITIONS[8];
+}
+function card(inner, extraStyle) {
+  return '<div class="rounded-2xl" style="background:' + C.card + ';border:1px solid ' + C.line + ';padding:16px;' + (extraStyle || "") + '">' + inner + '</div>';
+}
+function sectionTitle(text) {
+  return '<div style="color:' + C.chalkDim + ';font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">' + esc(text) + '</div>';
+}
+function dots(n, max) {
+  max = max || 3;
+  var out = '<span style="letter-spacing:2px;color:' + C.ochreBright + ';font-size:10px">';
+  for (var i = 0; i < n; i++) out += "●";
+  out += '<span style="color:' + C.line + '">';
+  for (var j = n; j < max; j++) out += "●";
+  out += "</span></span>";
+  return out;
+}
+function focoBadge(foco) {
+  var map = {
+    "Delantero": { bg: C.ochreDim, fg: C.ochreBright, label: "Delanteros" },
+    "Back": { bg: C.skyDim, fg: C.sky, label: "Backs" },
+    "Todos": { bg: C.line, fg: C.chalkDim, label: "Todos" }
+  };
+  var s = map[foco] || map["Todos"];
+  return '<span class="rounded-full" style="display:inline-block;padding:2px 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:' + s.bg + ';color:' + s.fg + '">' + s.label + '</span>';
+}
+function statBox(value, label, iconName) {
+  return card(
+    '<div class="flex items-center justify-center" style="gap:4px;color:' + C.chalk + ';font-size:22px;font-family:var(--font-mono);font-weight:700">' +
+      (iconName ? icon(iconName, 14, C.ochreBright) : "") + '<span>' + esc(value) + '</span>' +
+    '</div>' +
+    '<div style="color:' + C.muted + ';font-size:10px;margin-top:2px;text-align:center">' + esc(label) + '</div>',
+    "padding:12px;text-align:center"
+  );
+}
+function miniStat(value, label) {
+  return '<div class="rounded-xl text-center" style="background:' + C.card + ';border:1px solid ' + C.line + ';padding:8px">' +
+    '<div style="color:' + C.ochreBright + ';font-family:var(--font-mono);font-size:16px;font-weight:700">' + esc(value) + '</div>' +
+    '<div style="color:' + C.muted + ';font-size:9px">' + esc(label) + '</div></div>';
+}
+function pitchLineup(selectedNum, handlerJs) {
+  var lines = [10, 30, 50, 70, 90];
+  var html = '<div class="relative w-full rounded-2xl overflow-hidden" style="aspect-ratio:3/4;background:repeating-linear-gradient(180deg,#16261B 0px,#16261B 34px,#132119 34px,#132119 68px);border:1px solid ' + C.line + '">';
+  lines.forEach(function (y) {
+    html += '<div class="absolute" style="left:0;right:0;top:' + y + '%;border-top:1px solid rgba(241,239,230,0.18)"></div>';
+  });
+  html += '<div class="absolute text-center" style="left:0;right:0;top:2%;font-size:9px;color:' + C.chalkDim + ';letter-spacing:2px">INGOAL RIVAL</div>';
+  html += '<div class="absolute text-center" style="left:0;right:0;top:95%;font-size:9px;color:' + C.chalkDim + ';letter-spacing:2px">INGOAL PROPIO</div>';
+  POSITIONS.forEach(function (p) {
+    var isSel = selectedNum === p.num;
+    html += '<button onclick="' + handlerJs + '(' + p.num + ')" class="absolute flex items-center justify-center rounded-full" style="left:' + p.x + '%;top:' + p.y + '%;transform:translate(-50%,-50%);width:30px;height:30px;font-family:var(--font-mono);font-size:12px;font-weight:700;background:' + (isSel ? C.ochre : C.bgSoft) + ';color:' + (isSel ? "#1A1006" : C.chalk) + ';border:2px solid ' + (isSel ? C.ochreBright : C.line) + ';box-shadow:' + (isSel ? "0 0 0 4px " + C.ochreDim : "none") + '">' + p.num + '</button>';
+  });
+  html += "</div>";
+  return html;
+}
+function weeklyBarChart(data) {
+  var max = 1;
+  data.forEach(function (d) { if (d.sesiones > max) max = d.sesiones; });
+  var html = '<div class="flex items-end" style="height:140px;gap:8px;padding:4px 2px 0">';
+  data.forEach(function (d, i) {
+    var isLast = i === data.length - 1;
+    var h = d.sesiones === 0 ? 3 : Math.max(6, (d.sesiones / max) * 100);
+    html += '<div class="flex flex-col items-center justify-end flex-1" style="height:100%">' +
+      '<div style="color:' + C.muted + ';font-size:10px;margin-bottom:4px;font-family:var(--font-mono)">' + d.sesiones + '</div>' +
+      '<div style="width:100%;max-width:22px;height:' + h + 'px;background:' + (isLast ? C.ochre : C.line) + ';border-radius:4px 4px 0 0"></div>' +
+      '<div style="color:' + C.muted + ';font-size:9px;margin-top:6px">' + esc(d.label) + '</div>' +
+    '</div>';
+  });
+  html += "</div>";
+  return html;
+}
+
+/* ---------------------------------------------------------------------- */
+/* APP STATE                                                               */
+/* ---------------------------------------------------------------------- */
+function safeParse(v, fallback) {
+  try { var p = JSON.parse(v); return p == null ? fallback : p; } catch (e) { return fallback; }
+}
+function defaultMatchForm() {
+  return {
+    date: new Date().toISOString().slice(0, 10), rival: "", positionNum: 9, minutes: 80,
+    tries: 0, conversions: 0, tackles: 0, passes: 0, carries: 0, turnovers: 0, note: ""
+  };
+}
+
+var App = {
+  state: {
+    tab: "home",
+    sessions: [],
+    matches: [],
+    profile: JSON.parse(JSON.stringify(DEFAULT_PROFILE)),
+    trainingQueue: null,
+    showMatchForm: false,
+    levelUp: null,
+    toast: null,
+    openExercise: null,
+    catFilter: "Todas",
+    historyOpen: null,
+    infoOpen: "backup"
+  },
+  matchForm: defaultMatchForm(),
+  toastToken: 0,
+
+  init: function () {
+    try { this.state.sessions = safeParse(localStorage.getItem("rugby-sessions"), []); } catch (e) { this.state.sessions = []; }
+    try { this.state.matches = safeParse(localStorage.getItem("rugby-matches"), []); } catch (e) { this.state.matches = []; }
+    try {
+      var p = safeParse(localStorage.getItem("rugby-profile"), null);
+      this.state.profile = p ? Object.assign({}, DEFAULT_PROFILE, p) : JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+    } catch (e) { this.state.profile = JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
+    this.render();
+  },
+
+  persistSessions: function (next) {
+    this.state.sessions = next;
+    try { localStorage.setItem("rugby-sessions", JSON.stringify(next)); } catch (e) { this.showToast("No se pudo guardar. Probá de nuevo."); }
+  },
+  persistMatches: function (next) {
+    this.state.matches = next;
+    try { localStorage.setItem("rugby-matches", JSON.stringify(next)); } catch (e) { this.showToast("No se pudo guardar. Probá de nuevo."); }
+  },
+  persistProfile: function (next) {
+    this.state.profile = next;
+    try { localStorage.setItem("rugby-profile", JSON.stringify(next)); } catch (e) {}
+  },
+  deleteSession: function (id) {
+    if (!window.confirm("¿Borrar esta sesión de entrenamiento? No se puede deshacer.")) return;
+    var next = this.state.sessions.filter(function (x) { return x.id !== id; });
+    this.persistSessions(next);
+    this.state.historyOpen = null;
+    this.showToast("Sesión borrada");
+  },
+  deleteMatch: function (id) {
+    if (!window.confirm("¿Borrar este partido? No se puede deshacer.")) return;
+    var next = this.state.matches.filter(function (x) { return x.id !== id; });
+    this.persistMatches(next);
+    this.showToast("Partido borrado");
+  },
+  resetAllData: function () {
+    if (!window.confirm("Esto borra TODAS las sesiones, partidos y tu perfil guardados en este dispositivo. No se puede deshacer. ¿Continuar?")) return;
+    try { localStorage.removeItem("rugby-sessions"); localStorage.removeItem("rugby-matches"); localStorage.removeItem("rugby-profile"); } catch (e) {}
+    location.reload();
+  },
+
+  showToast: function (msg) {
+    var self = this;
+    this.state.toast = msg;
+    this.toastToken++;
+    var myToken = this.toastToken;
+    this.render();
+    setTimeout(function () {
+      if (self.toastToken === myToken) { self.state.toast = null; self.render(); }
+    }, 2400);
+  },
+
+  setTab: function (t) { this.state.tab = t; this.render(); },
+  selectPosition: function (n) { this.persistProfile(Object.assign({}, this.state.profile, { positionNum: n })); this.render(); },
+  setProfileName: function (value) { this.state.profile.name = value; },
+  saveProfileName: function () { this.persistProfile(Object.assign({}, this.state.profile, { name: this.state.profile.name || "" })); this.showToast("Nombre guardado"); },
+  changeGoal: function (g) { g = Math.max(1, Math.min(7, g)); this.persistProfile(Object.assign({}, this.state.profile, { weeklyGoal: g })); this.render(); },
+  cyclePlanDay: function (i) {
+    var plan = (this.state.profile.weeklyPlan || DEFAULT_PROFILE.weeklyPlan).slice();
+    var idx = PLAN_TYPES.indexOf(plan[i]);
+    plan[i] = PLAN_TYPES[(idx + 1) % PLAN_TYPES.length];
+    this.persistProfile(Object.assign({}, this.state.profile, { weeklyPlan: plan }));
+    this.render();
+  },
+  setCatFilter: function (c) { this.state.catFilter = c; this.render(); },
+  toggleExercise: function (id) { this.state.openExercise = this.state.openExercise === id ? null : id; this.render(); },
+  toggleHistory: function (id) { this.state.historyOpen = this.state.historyOpen === id ? null : id; this.render(); },
+  toggleInfo: function (k) { this.state.infoOpen = this.state.infoOpen === k ? null : k; this.render(); },
+
+  buildSession: function (positionNum) {
+    var pos = posByNum(positionNum);
+    var group = pos.group;
+    var preferredCats = group === "Delantero"
+      ? ["Scrum", "Line-out", "Ruck y Maul", "Tackleo", "Físico y contacto"]
+      : ["Pase y manejo", "Patada", "Evasión y espacios", "Tackleo", "Físico y contacto"];
+    var chosen = [];
+    preferredCats.forEach(function (cat) {
+      var opts = EXERCISES.filter(function (e) { return e.cat === cat && (e.foco === "Todos" || e.foco === group); });
+      if (opts.length) chosen.push(opts[Math.floor(Math.random() * opts.length)]);
+    });
+    return chosen;
+  },
+  startTraining: function (positionNum) {
+    var exs = this.buildSession(positionNum);
+    this.state.trainingQueue = { positionNum: positionNum, exercises: exs, checked: {} };
+    this.render();
+  },
+  regenerateTraining: function () { this.startTraining(this.state.trainingQueue.positionNum); },
+  toggleCheck: function (id) {
+    var q = this.state.trainingQueue;
+    q.checked[id] = !q.checked[id];
+    this.render();
+  },
+  cancelTraining: function () { this.state.trainingQueue = null; this.render(); },
+  saveTraining: function () {
+    var q = this.state.trainingQueue;
+    if (!q) return;
+    var done = q.exercises.filter(function (e) { return q.checked[e.id]; });
+    if (done.length === 0) { this.showToast("Marcá al menos un ejercicio."); return; }
+    var durationMin = done.reduce(function (a, e) { return a + e.dur; }, 0);
+    var newSession = {
+      id: Date.now(), date: new Date().toISOString(), positionNum: q.positionNum,
+      exercises: done.map(function (e) { return { id: e.id, name: e.name, cat: e.cat, dur: e.dur }; }),
+      durationMin: durationMin
+    };
+    var prevTier = tierFor(this.state.sessions.length);
+    var next = this.state.sessions.concat([newSession]);
+    this.persistSessions(next);
+    var newTier = tierFor(next.length);
+    this.state.trainingQueue = null;
+    this.state.tab = "home";
+    if (newTier.name !== prevTier.name) { this.state.levelUp = newTier; this.render(); }
+    else { this.showToast("¡Sesión guardada!"); }
+  },
+  closeLevelUp: function () { this.state.levelUp = null; this.render(); },
+
+  openMatchForm: function () { this.matchForm = defaultMatchForm(); this.state.showMatchForm = true; this.render(); },
+  closeMatchForm: function () { this.state.showMatchForm = false; this.render(); },
+  setMatchPosition: function (n) { this.matchForm.positionNum = n; this.render(); },
+  setMatchField: function (key, value) { this.matchForm[key] = value; },
+  setMatchNumber: function (key, value) {
+    var n = Math.max(0, Number(value) || 0);
+    this.matchForm[key] = n;
+    var el = document.getElementById("mf_" + key);
+    if (el) el.value = n;
+  },
+  saveMatch: function () {
+    var next = this.state.matches.concat([Object.assign({}, this.matchForm, { id: Date.now() })]);
+    this.persistMatches(next);
+    this.state.showMatchForm = false;
+    this.showToast("¡Partido registrado!");
+  },
+
+  /* ---------------------- BACKUP: EXPORT / IMPORT ---------------------- */
+  exportBackup: function () {
+    var payload = {
+      app: "TRY+ Entrenamiento de Rugby", backupVersion: 1, exportedAt: new Date().toISOString(),
+      sessions: this.state.sessions, matches: this.state.matches, profile: this.state.profile
+    };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var stamp = new Date().toISOString().slice(0, 10);
+    a.href = url; a.download = "tryplus-backup-" + stamp + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.showToast("Copia de seguridad descargada");
+  },
+  triggerImport: function () {
+    var el = document.getElementById("importFileInput");
+    if (el) el.click();
+  },
+  importBackupFromInput: function (input) {
+    var self = this;
+    var file = input.files && input.files[0];
+    input.value = "";
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(String(reader.result));
+        if (!data || typeof data !== "object") throw new Error("bad format");
+        var ok = window.confirm("Esto va a reemplazar los datos guardados en este dispositivo por los del archivo. ¿Continuar?");
+        if (!ok) return;
+        if (Array.isArray(data.sessions)) self.persistSessions(data.sessions);
+        if (Array.isArray(data.matches)) self.persistMatches(data.matches);
+        if (data.profile && typeof data.profile === "object") self.persistProfile(Object.assign({}, DEFAULT_PROFILE, data.profile));
+        self.showToast("¡Datos importados correctamente!");
+        self.render();
+      } catch (e) {
+        self.showToast("No se pudo leer ese archivo de respaldo.");
+      }
+    };
+    reader.onerror = function () { self.showToast("No se pudo leer ese archivo de respaldo."); };
+    reader.readAsText(file);
+  },
+
+  /* ---------------------------------------------------------------------- */
+  /* RENDER                                                                  */
+  /* ---------------------------------------------------------------------- */
+  render: function () {
+    var scrollY = window.scrollY;
+    var s = this.state;
+    var totalSessions = s.sessions.length;
+    var wk = weekKey(new Date());
+    var thisWeekSessions = s.sessions.filter(function (x) { return weekKey(x.date) === wk; }).length;
+
+    var weeks = {};
+    s.sessions.forEach(function (x) { weeks[weekKey(x.date)] = true; });
+    var streak = 0, cursor = new Date();
+    while (weeks[weekKey(cursor)]) { streak++; cursor.setDate(cursor.getDate() - 7); }
+
+    var tier = tierFor(totalSessions);
+    var selectedPosition = posByNum(s.profile.positionNum);
+    var lastSession = s.sessions.length ? s.sessions[s.sessions.length - 1] : null;
+
+    var weeklyChartData = [];
+    for (var i = 5; i >= 0; i--) {
+      var d = daysAgo(i * 7);
+      var wkk = weekKey(d);
+      var count = s.sessions.filter(function (x) { return weekKey(x.date) === wkk; }).length;
+      weeklyChartData.push({ label: i === 0 ? "Esta" : ("-" + i + "sem"), sesiones: count });
+    }
+
+    var categoryCounts = {};
+    CATEGORIES.forEach(function (c) { categoryCounts[c] = 0; });
+    s.sessions.forEach(function (x) { x.exercises.forEach(function (e) { categoryCounts[e.cat] = (categoryCounts[e.cat] || 0) + 1; }); });
+    var favoriteCategory = null, bestN = 0;
+    Object.keys(categoryCounts).forEach(function (c) { if (categoryCounts[c] > bestN) { favoriteCategory = c; bestN = categoryCounts[c]; } });
+
+    var weekCounts = {};
+    s.sessions.forEach(function (x) { var k = weekKey(x.date); weekCounts[k] = (weekCounts[k] || 0) + 1; });
+    var bestWeek = 0;
+    Object.keys(weekCounts).forEach(function (k) { if (weekCounts[k] > bestWeek) bestWeek = weekCounts[k]; });
+
+    var careerTotals = s.matches.reduce(function (acc, m) {
+      return { tries: acc.tries + (m.tries || 0), tackles: acc.tackles + (m.tackles || 0), passes: acc.passes + (m.passes || 0), carries: acc.carries + (m.carries || 0) };
+    }, { tries: 0, tackles: 0, passes: 0, carries: 0 });
+
+    var content = "";
+    if (s.tab === "home") content = this.renderHome(totalSessions, thisWeekSessions, streak, tier, selectedPosition, lastSession);
+    else if (s.tab === "exercises") content = this.renderExercises();
+    else if (s.tab === "train") content = this.renderTrain(selectedPosition);
+    else if (s.tab === "progress") content = this.renderProgress(tier, weeklyChartData, categoryCounts, favoriteCategory, streak, bestWeek);
+    else if (s.tab === "matches") content = this.renderMatches(careerTotals);
+    else if (s.tab === "info") content = this.renderInfo();
+
+    var nav = this.renderNav();
+    var toast = s.toast ? ('<div class="fixed rounded-full" style="left:50%;bottom:96px;transform:translateX(-50%);padding:8px 16px;font-size:14px;font-weight:500;background:' + C.chalk + ';color:' + C.bg + ';z-index:50">' + esc(s.toast) + '</div>') : "";
+    var levelUp = s.levelUp ? this.renderLevelUp() : "";
+    var matchModal = s.showMatchForm ? this.renderMatchModal() : "";
+
+    var html =
+      '<div style="background:' + C.bg + ';min-height:100vh;font-family:var(--font-body)">' +
+        '<div class="max-w-md mx-auto relative" style="min-height:100vh;background:' + C.bg + '">' +
+          '<div class="flex items-center justify-between" style="padding:24px 20px 12px">' +
+            '<div>' +
+              '<div style="font-family:var(--font-display);color:' + C.chalk + ';font-size:26px;letter-spacing:1px;font-weight:800">TRY<span style="color:' + C.ochre + '">+</span></div>' +
+              '<div style="color:' + C.muted + ';font-size:11px;letter-spacing:1px">ENTRENAMIENTO DE RUGBY</div>' +
+            '</div>' +
+            '<div class="flex items-center justify-center rounded-full" style="width:44px;height:44px;background:' + C.cardAlt + ';border:1px solid ' + C.line + ';color:' + C.ochreBright + ';font-family:var(--font-mono);font-weight:700">' + selectedPosition.num + '</div>' +
+          '</div>' +
+          '<div style="padding:0 20px 112px">' + content + '</div>' +
+          nav +
+          toast +
+          levelUp +
+          matchModal +
+        '</div>' +
+      '</div>';
+
+    document.getElementById("app").innerHTML = html;
+    window.scrollTo(0, scrollY);
+  },
+
+  renderNav: function () {
+    var s = this.state;
+    var items = [
+      { id: "home", label: "Inicio", icon: "home" },
+      { id: "exercises", label: "Ejerc.", icon: "list" },
+      { id: "train", label: "Entrenar", icon: "play", big: true },
+      { id: "progress", label: "Progreso", icon: "trending" },
+      { id: "matches", label: "Partidos", icon: "shield" },
+      { id: "info", label: "Info", icon: "bookOpen" }
+    ];
+    var html = '<div class="fixed flex items-center justify-around max-w-md mx-auto" style="bottom:0;left:0;right:0;padding:8px 4px;background:' + C.bgSoft + ';border-top:1px solid ' + C.line + '">';
+    items.forEach(function (it) {
+      var active = s.tab === it.id;
+      var size = it.big ? 40 : 30;
+      html += '<button onclick="App.setTab(\'' + it.id + '\')" class="flex flex-col items-center" style="gap:2px;padding:0 4px">' +
+        '<div class="flex items-center justify-center rounded-full" style="width:' + size + 'px;height:' + size + 'px;background:' + (active ? C.ochre : "transparent") + ';color:' + (active ? "#1A1006" : C.muted) + '">' + icon(it.icon, it.big ? 20 : 16, "currentColor") + '</div>' +
+        '<span style="font-size:8px;letter-spacing:.3px;color:' + (active ? C.chalk : C.muted) + '">' + it.label.toUpperCase() + '</span>' +
+      '</button>';
+    });
+    html += "</div>";
+    return html;
+  },
+
+  renderLevelUp: function () {
+    var lv = this.state.levelUp;
+    return '<div class="fixed flex items-center justify-center inset-0" style="padding:0 24px;background:rgba(0,0,0,0.7);z-index:60">' +
+      card(
+        '<div style="margin:0 auto 10px;width:40px">' + icon("trophy", 40, C.ochreBright) + '</div>' +
+        '<div style="color:' + C.chalkDim + ';font-size:12px;letter-spacing:1px">¡SUBISTE DE NIVEL!</div>' +
+        '<div style="font-family:var(--font-display);color:' + C.chalk + ';font-size:30px;margin-top:4px;font-weight:800">' + esc(lv.name) + '</div>' +
+        '<button onclick="App.closeLevelUp()" class="w-full rounded-xl" style="margin-top:16px;padding:12px;font-weight:700;background:' + C.ochre + ';color:#1A1006">Seguir entrenando</button>',
+        "text-align:center;width:100%;max-width:320px;border-color:" + C.ochre + ";border:1px solid " + C.ochre
+      ) +
+    '</div>';
+  },
+
+  renderHome: function (totalSessions, thisWeekSessions, streak, tier, selectedPosition, lastSession) {
+    var s = this.state;
+    var dayIndex = Math.floor(Date.now() / 86400000) % TIPS.length;
+    var tip = TIPS[dayIndex];
+    var goal = s.profile.weeklyGoal || 3;
+    var goalPct = Math.min(100, (thisWeekSessions / goal) * 100);
+
+    var html = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+    html += '<div><div style="color:' + C.chalk + ';font-size:22px;font-weight:800">' + (s.profile.name ? ("Hola, " + esc(s.profile.name)) : "Hola") + '</div>' +
+      '<div style="color:' + C.muted + ';font-size:13px">' + (totalSessions === 0 ? "Listo para tu primer entrenamiento." : "Listo para sumar otro entrenamiento.") + '</div></div>';
+
+    html += '<div class="grid grid-cols-3" style="gap:8px">' + statBox(totalSessions, "Sesiones totales") + statBox(thisWeekSessions, "Esta semana") + statBox(streak, "Racha (sem.)", "flame") + '</div>';
+
+    html += card(
+      '<div class="flex items-center justify-between">' +
+        '<div class="flex items-center" style="gap:8px">' + icon("target", 16, C.ochreBright) + '<span style="color:' + C.chalk + ';font-weight:700;font-size:13px">Objetivo semanal</span></div>' +
+        '<div class="flex items-center" style="gap:8px">' +
+          '<button onclick="App.changeGoal(' + (goal - 1) + ')" class="flex items-center justify-center rounded-full" style="width:24px;height:24px;background:' + C.cardAlt + ';border:1px solid ' + C.line + '">' + icon("minus", 12, C.chalkDim) + '</button>' +
+          '<span style="color:' + C.chalk + ';font-family:var(--font-mono);font-size:13px;width:14px;text-align:center">' + goal + '</span>' +
+          '<button onclick="App.changeGoal(' + (goal + 1) + ')" class="flex items-center justify-center rounded-full" style="width:24px;height:24px;background:' + C.cardAlt + ';border:1px solid ' + C.line + '">' + icon("plus", 12, C.chalkDim) + '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="rounded-lg overflow-hidden" style="height:6px;background:' + C.line + ';margin-top:10px">' +
+        '<div style="height:100%;width:' + goalPct + '%;background:' + (goalPct >= 100 ? C.ochre : C.sky) + '"></div>' +
+      '</div>' +
+      '<div style="color:' + C.muted + ';font-size:11px;margin-top:6px">' + (thisWeekSessions >= goal ? "¡Objetivo cumplido esta semana! 🏉" : (thisWeekSessions + " de " + goal + " sesiones esta semana")) + '</div>'
+    );
+
+    html += card(
+      '<div class="flex items-start" style="gap:8px">' + icon("lightbulb", 16, C.ochreBright) +
+        '<div><div style="color:' + C.ochreBright + ';font-size:10px;font-weight:700;letter-spacing:1px">CONSEJO DEL DÍA</div>' +
+        '<div style="color:' + C.chalk + ';font-size:12px;margin-top:3px;line-height:1.5">' + esc(tip) + '</div></div>' +
+      '</div>',
+      "background:" + C.ochreDim + ";border-color:" + C.ochre + ";border:1px solid " + C.ochre
+    );
+
+    html += '<button onclick="App.setTab(\'train\')" class="w-full rounded-2xl flex items-center justify-center" style="gap:8px;padding:16px;font-weight:700;font-size:15px;background:' + C.ochre + ';color:#1A1006">' + icon("play", 20, "#1A1006") + '<span>Empezar entrenamiento</span></button>';
+
+    var progressBar = "";
+    if (tier.next) {
+      var pct = Math.min(100, ((totalSessions - tier.min) / (tier.next - tier.min)) * 100);
+      progressBar = '<div style="margin-top:12px"><div class="rounded-lg overflow-hidden" style="height:6px;background:' + C.line + '"><div style="height:100%;width:' + pct + '%;background:' + C.ochre + '"></div></div>' +
+        '<div style="color:' + C.muted + ';font-size:10px;margin-top:4px">' + (tier.next - totalSessions) + ' sesiones para el próximo nivel</div></div>';
+    }
+    html += card(
+      '<div class="relative" style="position:absolute;right:-20px;top:-30px;font-size:140px;font-family:var(--font-display);color:rgba(201,134,47,0.08);line-height:1">' + selectedPosition.num + '</div>' +
+      '<div class="relative">' +
+        '<div style="color:' + C.muted + ';font-size:11px;letter-spacing:1px">TU CARTA</div>' +
+        '<div style="font-family:var(--font-display);color:' + C.chalk + ';font-size:24px;margin-top:2px;font-weight:800">' + esc(selectedPosition.name) + '</div>' +
+        '<div class="flex items-center" style="gap:8px;margin-top:4px">' + focoBadge(selectedPosition.group) + '<span style="color:' + C.ochreBright + ';font-size:12px;font-weight:700">' + esc(tier.name) + '</span></div>' +
+        progressBar +
+      '</div>',
+      "background:linear-gradient(135deg," + C.cardAlt + "," + C.card + ");border-color:" + C.ochreDim + ";border:1px solid " + C.ochreDim + ";position:relative;overflow:hidden"
+    );
+
+    html += '<div>' + sectionTitle("Tu posición") + card(
+      pitchLineup(selectedPosition.num, "App.selectPosition") +
+      '<div style="margin-top:12px">' +
+        '<div style="color:' + C.chalk + ';font-weight:700;font-size:14px">' + selectedPosition.num + ' · ' + esc(selectedPosition.name) + '</div>' +
+        '<div style="color:' + C.muted + ';font-size:12px;margin-top:4px;line-height:1.5">' + esc(selectedPosition.desc) + '</div>' +
+      '</div>'
+    ) + '</div>';
+
+    if (lastSession) {
+      var em = CAT_EMOJI[lastSession.exercises[0] ? lastSession.exercises[0].cat : ""] || "🏉";
+      html += '<div>' + sectionTitle("Última sesión") + card(
+        '<div class="flex items-center justify-between">' +
+          '<div><div style="color:' + C.chalk + ';font-weight:700;font-size:14px">' + fmtDate(lastSession.date) + '</div>' +
+          '<div style="color:' + C.muted + ';font-size:12px">' + lastSession.exercises.length + ' ejercicios · ' + lastSession.durationMin + ' min</div></div>' +
+          '<div style="color:' + C.ochreBright + ';font-size:20px">' + em + '</div>' +
+        '</div>'
+      ) + '</div>';
+    }
+
+    html += '<div style="color:' + C.muted + ';font-size:11px;text-align:center;margin-top:4px">💾 Progreso guardado en este navegador · hacé una copia en la pestaña Info</div>';
+    html += "</div>";
+    return html;
+  },
+
+  renderExercises: function () {
+    var s = this.state;
+    var cats = ["Todas"].concat(CATEGORIES);
+    var list = EXERCISES.filter(function (e) { return s.catFilter === "Todas" || e.cat === s.catFilter; });
+
+    var html = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+    html += '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Biblioteca de ejercicios</div><div style="color:' + C.muted + ';font-size:12px">' + EXERCISES.length + ' ejercicios de rugby</div></div>';
+
+    html += '<div class="flex overflow-x-auto" style="gap:8px;padding-bottom:4px">';
+    cats.forEach(function (c) {
+      var active = s.catFilter === c;
+      html += '<button onclick="App.setCatFilter(\'' + c.replace(/'/g, "\\'") + '\')" class="rounded-full whitespace-nowrap" style="padding:6px 12px;font-size:12px;font-weight:600;background:' + (active ? C.ochre : C.card) + ';color:' + (active ? "#1A1006" : C.chalkDim) + ';border:1px solid ' + (active ? C.ochre : C.line) + '">' + (c !== "Todas" ? CAT_EMOJI[c] + " " : "") + esc(c) + '</button>';
+    });
+    html += "</div>";
+
+    html += '<div class="flex flex-col" style="gap:8px">';
+    list.forEach(function (e) {
+      var open = s.openExercise === e.id;
+      html += card(
+        '<button onclick="App.toggleExercise(\'' + e.id + '\')" class="w-full flex items-center justify-between">' +
+          '<div class="flex items-center text-left" style="gap:12px">' +
+            '<span style="font-size:20px">' + CAT_EMOJI[e.cat] + '</span>' +
+            '<div><div style="color:' + C.chalk + ';font-weight:700;font-size:14px;text-align:left">' + esc(e.name) + '</div>' +
+            '<div class="flex items-center" style="gap:8px;margin-top:4px">' + focoBadge(e.foco) + '<span style="color:' + C.muted + ';font-size:11px">' + e.dur + ' min</span>' + dots(e.dif) + '</div></div>' +
+          '</div>' +
+          '<span style="transform:' + (open ? "rotate(180deg)" : "none") + '">' + icon("chevronDown", 16, C.muted) + '</span>' +
+        '</button>' +
+        (open ? ('<div style="color:' + C.chalkDim + ';font-size:12px;margin-top:10px;padding-top:10px;border-top:1px solid ' + C.line + ';line-height:1.5">' + esc(e.desc) + '</div>') : ""),
+        "padding:14px"
+      );
+    });
+    html += "</div></div>";
+    return html;
+  },
+
+  renderTrain: function (selectedPosition) {
+    var s = this.state;
+    var q = s.trainingQueue;
+    if (!q) {
+      var html = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+      html += '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Entrenar</div><div style="color:' + C.muted + ';font-size:12px">Elegí tu posición y generamos la sesión de hoy.</div></div>';
+
+      var plan = s.profile.weeklyPlan || DEFAULT_PROFILE.weeklyPlan;
+      var dayBtns = "";
+      DAY_LABELS.forEach(function (d, i) {
+        dayBtns += '<button onclick="App.cyclePlanDay(' + i + ')" class="flex flex-col items-center rounded-lg" style="gap:4px;padding:8px 0;background:' + C.cardAlt + ';border:1px solid ' + C.line + '">' +
+          '<span style="font-size:9px;color:' + C.muted + '">' + d + '</span><span style="font-size:15px">' + PLAN_EMOJI[plan[i]] + '</span></button>';
+      });
+      html += '<div>' + sectionTitle("Plan semanal") + card('<div class="grid grid-cols-7" style="gap:4px">' + dayBtns + '</div>' +
+        '<div style="color:' + C.muted + ';font-size:10px;margin-top:8px;text-align:center">Tocá un día para cambiar: descanso · técnica · físico · partido</div>', "padding:12px") + '</div>';
+
+      html += card(pitchLineup(selectedPosition.num, "App.selectPosition") + '<div style="margin-top:12px;color:' + C.chalk + ';font-weight:700;font-size:14px">' + selectedPosition.num + ' · ' + esc(selectedPosition.name) + '</div>');
+
+      html += '<button onclick="App.startTraining(' + selectedPosition.num + ')" class="w-full rounded-2xl flex items-center justify-center" style="gap:8px;padding:16px;font-weight:700;font-size:15px;background:' + C.ochre + ';color:#1A1006">' + icon("target", 18, "#1A1006") + '<span>Generar entrenamiento</span></button>';
+      html += "</div>";
+      return html;
+    }
+
+    var doneCount = Object.keys(q.checked).filter(function (k) { return q.checked[k]; }).length;
+    var totalMin = q.exercises.filter(function (e) { return q.checked[e.id]; }).reduce(function (a, e) { return a + e.dur; }, 0);
+    var pos = posByNum(q.positionNum);
+
+    var html2 = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+    html2 += '<div class="flex items-center justify-between">' +
+      '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Sesión de hoy</div><div style="color:' + C.muted + ';font-size:12px">' + esc(pos.name) + '</div></div>' +
+      '<button onclick="App.regenerateTraining()" class="rounded-full" style="padding:8px;background:' + C.card + ';border:1px solid ' + C.line + '">' + icon("rotateCcw", 16, C.chalkDim) + '</button>' +
+    '</div>';
+
+    html2 += card(
+      '<div class="flex items-center justify-between"><div style="color:' + C.chalkDim + ';font-size:12px">Completados</div>' +
+      '<div style="color:' + C.ochreBright + ';font-size:12px;font-family:var(--font-mono)">' + doneCount + '/' + q.exercises.length + ' · ' + totalMin + ' min</div></div>' +
+      '<div class="rounded-lg overflow-hidden" style="height:6px;background:' + C.line + ';margin-top:6px"><div style="height:100%;width:' + ((doneCount / q.exercises.length) * 100) + '%;background:' + C.ochre + '"></div></div>',
+      "padding:12px"
+    );
+
+    html2 += '<div class="flex flex-col" style="gap:8px">';
+    q.exercises.forEach(function (e) {
+      var checked = !!q.checked[e.id];
+      html2 += '<button onclick="App.toggleCheck(\'' + e.id + '\')" class="w-full text-left">' + card(
+        '<div class="flex items-center" style="gap:12px">' +
+          '<div class="flex items-center justify-center rounded-full flex-shrink-0" style="width:26px;height:26px;background:' + (checked ? C.ochre : "transparent") + ';border:2px solid ' + (checked ? C.ochre : C.muted) + '">' + (checked ? icon("check", 14, "#1A1006") : "") + '</div>' +
+          '<span style="font-size:18px">' + CAT_EMOJI[e.cat] + '</span>' +
+          '<div class="flex-1"><div style="color:' + C.chalk + ';font-weight:700;font-size:13px;text-decoration:' + (checked ? "line-through" : "none") + '">' + esc(e.name) + '</div>' +
+          '<div style="color:' + C.muted + ';font-size:11px;margin-top:2px">' + esc(e.cat) + ' · ' + e.dur + ' min</div></div>' +
+        '</div>',
+        "padding:12px;border-color:" + (checked ? C.ochre : C.line) + ";border:1px solid " + (checked ? C.ochre : C.line) + ";opacity:" + (checked ? 1 : 0.9)
+      ) + '</button>';
+    });
+    html2 += "</div>";
+
+    html2 += '<div class="flex" style="gap:8px;margin-top:8px">' +
+      '<button onclick="App.cancelTraining()" class="flex-1 rounded-xl" style="padding:12px;font-weight:600;background:' + C.card + ';color:' + C.chalkDim + ';border:1px solid ' + C.line + '">Cancelar</button>' +
+      '<button onclick="App.saveTraining()" class="flex-1 rounded-xl" style="padding:12px;font-weight:700;background:' + C.ochre + ';color:#1A1006">Guardar sesión</button>' +
+    '</div>';
+    html2 += "</div>";
+    return html2;
+  },
+
+  renderProgress: function (tier, weeklyChartData, categoryCounts, favoriteCategory, streak, bestWeek) {
+    var s = this.state;
+    var maxCat = 1;
+    Object.keys(categoryCounts).forEach(function (c) { if (categoryCounts[c] > maxCat) maxCat = categoryCounts[c]; });
+    var totalMinutes = s.sessions.reduce(function (a, x) { return a + (x.durationMin || 0); }, 0);
+
+    var html = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+    html += '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Progreso</div><div style="color:' + C.muted + ';font-size:12px">Nivel de jugador: <span style="color:' + C.ochreBright + ';font-weight:700">' + esc(tier.name) + '</span></div></div>';
+
+    html += card('<div style="color:' + C.chalkDim + ';font-size:12px;margin-bottom:8px">Últimas 6 semanas</div>' + weeklyBarChart(weeklyChartData));
+
+    var catRows = "";
+    CATEGORIES.forEach(function (c) {
+      catRows += '<div><div class="flex items-center justify-between" style="font-size:12px"><span style="color:' + C.chalkDim + '">' + CAT_EMOJI[c] + ' ' + esc(c) + '</span><span style="color:' + C.muted + ';font-family:var(--font-mono)">' + categoryCounts[c] + '</span></div>' +
+        '<div class="rounded-lg overflow-hidden" style="height:5px;background:' + C.line + ';margin-top:4px"><div style="height:100%;width:' + ((categoryCounts[c] / maxCat) * 100) + '%;background:' + C.ochre + '"></div></div></div>';
+    });
+    html += '<div>' + sectionTitle("Por categoría") + '<div class="rounded-2xl flex flex-col" style="background:' + C.card + ';border:1px solid ' + C.line + ';padding:16px;gap:10px">' + catRows + '</div></div>';
+
+    html += '<div>' + sectionTitle("Récords personales") +
+      '<div class="grid grid-cols-3" style="gap:8px">' + statBox(streak, "Racha máx. (sem.)", "flame") + statBox(bestWeek, "Mejor semana", "trophy") + statBox(totalMinutes, "Minutos totales") + '</div>' +
+      (favoriteCategory ? ('<div style="color:' + C.muted + ';font-size:12px;margin-top:8px">Categoría favorita: <span style="color:' + C.chalk + '">' + CAT_EMOJI[favoriteCategory] + ' ' + esc(favoriteCategory) + '</span></div>') : "") +
+    '</div>';
+
+    html += '<div>' + sectionTitle("Diario del jugador");
+    if (s.sessions.length === 0) {
+      html += card("Todavía no registraste sesiones.", "text-align:center;color:" + C.muted + ";font-size:12px");
+    }
+    html += '<div class="flex flex-col" style="gap:8px">';
+    s.sessions.slice().reverse().forEach(function (sess) {
+      var open = s.historyOpen === sess.id;
+      var pos = posByNum(sess.positionNum);
+      var exList = "";
+      sess.exercises.forEach(function (e) {
+        exList += '<div style="color:' + C.chalkDim + ';font-size:11px">' + CAT_EMOJI[e.cat] + ' ' + esc(e.name) + ' · ' + e.dur + ' min</div>';
+      });
+      html += card(
+        '<button onclick="App.toggleHistory(' + sess.id + ')" class="w-full flex items-center justify-between">' +
+          '<div class="text-left"><div style="color:' + C.chalk + ';font-weight:700;font-size:13px">' + fmtDate(sess.date) + '</div>' +
+          '<div style="color:' + C.muted + ';font-size:11px">' + esc(pos.name) + ' · ' + sess.exercises.length + ' ejercicios · ' + sess.durationMin + ' min</div></div>' +
+          '<span style="transform:' + (open ? "rotate(180deg)" : "none") + '">' + icon("chevronDown", 14, C.muted) + '</span>' +
+        '</button>' +
+        (open ? ('<div class="flex flex-col" style="gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid ' + C.line + '">' + exList +
+          '<button onclick="event.stopPropagation();App.deleteSession(' + sess.id + ')" style="margin-top:8px;color:' + C.danger + ';font-size:11px;font-weight:600;text-align:left">Borrar sesión</button>' +
+        '</div>') : ""),
+        "padding:12px"
+      );
+    });
+    html += "</div></div></div>";
+    return html;
+  },
+
+  renderMatches: function (careerTotals) {
+    var s = this.state;
+    var html = '<div class="flex flex-col" style="gap:16px;margin-top:4px">';
+    html += '<div class="flex items-center justify-between">' +
+      '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Partidos</div><div style="color:' + C.muted + ';font-size:12px">Registrá tus estadísticas de cada partido</div></div>' +
+      '<button onclick="App.openMatchForm()" class="flex items-center justify-center rounded-full" style="width:40px;height:40px;background:' + C.ochre + '">' + icon("plus", 20, "#1A1006") + '</button>' +
+    '</div>';
+
+    html += '<div class="grid grid-cols-4" style="gap:8px">' + miniStat(careerTotals.tries, "Tries") + miniStat(careerTotals.tackles, "Tackles") + miniStat(careerTotals.passes, "Pases") + miniStat(careerTotals.carries, "Avances") + '</div>';
+
+    html += '<div>' + sectionTitle("Historial de partidos");
+    if (s.matches.length === 0) html += card("Todavía no registraste partidos.", "text-align:center;color:" + C.muted + ";font-size:12px");
+    html += '<div class="flex flex-col" style="gap:8px">';
+    s.matches.slice().reverse().forEach(function (m) {
+      var pos = posByNum(m.positionNum);
+      html += card(
+        '<div class="flex items-center justify-between">' +
+          '<div><div style="color:' + C.chalk + ';font-weight:700;font-size:13px">' + (m.rival ? ("vs " + esc(m.rival)) : "Partido") + '</div>' +
+          '<div style="color:' + C.muted + ';font-size:11px">' + new Date(m.date).toLocaleDateString("es-AR", { day: "2-digit", month: "short", year: "numeric" }) + ' · ' + esc(pos.name) + (m.minutes ? (' · ' + m.minutes + ' min') : '') + '</div></div>' +
+          '<div style="color:' + C.ochreBright + ';font-family:var(--font-mono);font-size:13px">' + m.tries + '🏉</div>' +
+        '</div>' +
+        '<div class="flex flex-wrap" style="gap:12px;margin-top:8px;font-size:11px;color:' + C.chalkDim + '">' +
+          '<span>💥 ' + m.tackles + ' tackles</span><span>🤾 ' + m.passes + ' pases</span><span>🏃 ' + m.carries + ' avances</span><span>🔁 ' + m.turnovers + ' turnovers</span>' +
+        '</div>' +
+        (m.note ? ('<div style="color:' + C.muted + ';font-size:11px;margin-top:6px;font-style:italic">' + esc(m.note) + '</div>') : "") +
+        '<button onclick="App.deleteMatch(' + m.id + ')" style="margin-top:8px;color:' + C.danger + ';font-size:11px;font-weight:600">Borrar partido</button>',
+        "padding:12px"
+      );
+    });
+    html += "</div></div></div>";
+    return html;
+  },
+
+  renderMatchModal: function () {
+    var f = this.matchForm;
+    var posBtns = "";
+    POSITIONS.forEach(function (p) {
+      var active = f.positionNum === p.num;
+      posBtns += '<button onclick="App.setMatchPosition(' + p.num + ')" class="rounded-full flex-shrink-0" style="padding:6px 12px;font-size:12px;font-weight:700;background:' + (active ? C.ochre : C.card) + ';color:' + (active ? "#1A1006" : C.chalkDim) + ';border:1px solid ' + C.line + '">' + p.num + '</button>';
+    });
+
+    function labeledInput(label, type, key, value) {
+      return '<div><div style="color:' + C.muted + ';font-size:11px;margin-bottom:4px">' + esc(label) + '</div>' +
+        '<input type="' + type + '" value="' + esc(value) + '" oninput="App.setMatchField(\'' + key + '\', this.value)" class="w-full rounded-lg outline-none" style="padding:8px 12px;background:' + C.card + ';border:1px solid ' + C.line + ';color:' + C.chalk + ';font-size:13px" /></div>';
+    }
+    function numberField(label, key, value) {
+      return '<div><div style="color:' + C.muted + ';font-size:10px;margin-bottom:4px">' + esc(label) + '</div>' +
+        '<input id="mf_' + key + '" type="number" min="0" value="' + value + '" oninput="App.setMatchNumber(\'' + key + '\', this.value)" class="w-full rounded-lg outline-none text-center" style="padding:8px;background:' + C.card + ';border:1px solid ' + C.line + ';color:' + C.chalk + ';font-size:14px;font-family:var(--font-mono)" /></div>';
+    }
+
+    return '<div class="fixed flex justify-center" style="inset:0;align-items:flex-end;background:rgba(0,0,0,0.6);z-index:60">' +
+      '<div class="w-full max-w-md rounded-t-3xl overflow-y-auto" style="padding:20px;max-height:85vh;background:' + C.bgSoft + ';border:1px solid ' + C.line + '">' +
+        '<div class="flex items-center justify-between" style="margin-bottom:16px">' +
+          '<div style="color:' + C.chalk + ';font-size:18px;font-weight:800">Registrar partido</div>' +
+          '<button onclick="App.closeMatchForm()">' + icon("x", 20, C.muted) + '</button>' +
+        '</div>' +
+        '<div class="flex flex-col" style="gap:12px">' +
+          labeledInput("Rival (opcional)", "text", "rival", f.rival) +
+          labeledInput("Fecha", "date", "date", f.date) +
+          '<div><div style="color:' + C.muted + ';font-size:11px;margin-bottom:4px">Posición jugada</div><div class="flex overflow-x-auto" style="gap:8px;padding-bottom:4px">' + posBtns + '</div></div>' +
+          numberField("⏱️ Minutos jugados", "minutes", f.minutes) +
+          '<div class="grid grid-cols-3" style="gap:8px">' +
+            numberField("🏉 Tries", "tries", f.tries) + numberField("🎯 Conv.", "conversions", f.conversions) + numberField("💥 Tackles", "tackles", f.tackles) +
+            numberField("🤾 Pases", "passes", f.passes) + numberField("🏃 Avances", "carries", f.carries) + numberField("🔁 Turnovers", "turnovers", f.turnovers) +
+          '</div>' +
+          labeledInput("Nota (opcional)", "text", "note", f.note) +
+          '<button onclick="App.saveMatch()" class="w-full rounded-xl" style="padding:12px;font-weight:700;margin-top:8px;background:' + C.ochre + ';color:#1A1006">Guardar partido</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  },
+
+  renderInfo: function () {
+    var s = this.state;
+    function infoSection(key, iconName, title, subtitle, innerHtml) {
+      var open = s.infoOpen === key;
+      return card(
+        '<button onclick="App.toggleInfo(\'' + key + '\')" class="w-full flex items-center justify-between">' +
+          '<div class="flex items-center text-left" style="gap:12px">' +
+            '<div class="flex items-center justify-center rounded-full flex-shrink-0" style="width:36px;height:36px;background:' + C.ochreDim + '">' + icon(iconName, 16, C.ochreBright) + '</div>' +
+            '<div><div style="color:' + C.chalk + ';font-weight:700;font-size:14px;text-align:left">' + esc(title) + '</div><div style="color:' + C.muted + ';font-size:11px">' + esc(subtitle) + '</div></div>' +
+          '</div>' +
+          '<span style="transform:' + (open ? "rotate(180deg)" : "none") + '">' + icon("chevronDown", 16, C.muted) + '</span>' +
+        '</button>' +
+        (open ? ('<div style="margin-top:12px;padding-top:12px;border-top:1px solid ' + C.line + '">' + innerHtml + '</div>') : ""),
+        "padding:14px"
+      );
+    }
+    function ul(items) {
+      var li = "";
+      items.forEach(function (it) { li += '<li style="color:' + C.chalkDim + ';font-size:12px;line-height:1.5;list-style:disc">' + esc(it) + '</li>'; });
+      return '<ul style="padding-left:16px">' + li + '</ul>';
+    }
+
+    var html = '<div class="flex flex-col" style="gap:12px;margin-top:4px">';
+    html += '<div><div style="color:' + C.chalk + ';font-size:20px;font-weight:800">Información y utilidad</div><div style="color:' + C.muted + ';font-size:12px">Todo lo que necesitás saber, fuera de la cancha.</div></div>';
+
+    var perfilInner =
+      '<div style="color:' + C.chalkDim + ';font-size:12px;line-height:1.5;margin-bottom:10px">Se usa para saludarte en Inicio. Es opcional.</div>' +
+      '<div class="flex" style="gap:8px">' +
+        '<input type="text" value="' + esc(s.profile.name || "") + '" placeholder="Tu nombre" oninput="App.setProfileName(this.value)" class="flex-1 rounded-lg outline-none" style="padding:10px 12px;background:' + C.card + ';border:1px solid ' + C.line + ';color:' + C.chalk + ';font-size:13px" />' +
+        '<button onclick="App.saveProfileName()" class="rounded-lg" style="padding:10px 16px;font-weight:700;background:' + C.ochre + ';color:#1A1006">Guardar</button>' +
+      '</div>';
+    html += infoSection("perfil", "target", "Tu perfil", "Nombre de jugador", perfilInner);
+
+    var backupInner =
+      '<div style="color:' + C.chalkDim + ';font-size:12px;line-height:1.5;margin-bottom:10px">Tus sesiones, partidos y perfil se guardan solo en este navegador. Si cambiás de teléfono, borrás datos del navegador o desinstalás la app, podés perderlos. Descargá una copia y guardala en Drive, mail o donde prefieras.</div>' +
+      '<div style="color:' + C.muted + ';font-size:11px;margin-bottom:12px">Ahora mismo: ' + s.sessions.length + ' sesiones · ' + s.matches.length + ' partidos</div>' +
+      '<div class="flex flex-col" style="gap:8px">' +
+        '<button onclick="App.exportBackup()" class="w-full rounded-xl flex items-center justify-center" style="gap:8px;padding:12px;font-weight:700;background:' + C.ochre + ';color:#1A1006">' + icon("download", 16, "#1A1006") + '<span>Exportar copia de seguridad</span></button>' +
+        '<button onclick="App.triggerImport()" class="w-full rounded-xl flex items-center justify-center" style="gap:8px;padding:12px;font-weight:600;background:' + C.card + ';color:' + C.chalkDim + ';border:1px solid ' + C.line + '">' + icon("upload", 16, C.chalkDim) + '<span>Importar copia de seguridad</span></button>' +
+        '<input id="importFileInput" type="file" accept="application/json,.json" style="display:none" onchange="App.importBackupFromInput(this)" />' +
+        '<button onclick="App.resetAllData()" class="w-full rounded-xl" style="margin-top:4px;padding:12px;font-weight:600;background:transparent;color:' + C.danger + ';border:1px solid ' + C.danger + '">Borrar todos los datos</button>' +
+      '</div>';
+    html += infoSection("backup", "database", "Copia de seguridad", "Exportá o restaurá tus datos", backupInner);
+
+    var glossaryInner = "";
+    GLOSSARY.forEach(function (g) {
+      glossaryInner += '<div><div style="color:' + C.ochreBright + ';font-weight:700;font-size:12px">' + esc(g.term) + '</div><div style="color:' + C.chalkDim + ';font-size:12px;line-height:1.4">' + esc(g.def) + '</div></div>';
+    });
+    html += infoSection("glosario", "scroll", "Glosario del rugby", GLOSSARY.length + " términos clave", '<div class="flex flex-col" style="gap:8px">' + glossaryInner + '</div>');
+
+    var rulesInner = "";
+    RULES.forEach(function (r) {
+      rulesInner += '<div><div style="color:' + C.chalk + ';font-weight:700;font-size:12px">' + esc(r.title) + '</div>' + ul(r.items) + '</div>';
+    });
+    html += infoSection("reglas", "bookOpen", "Reglas básicas", "Puntaje, tiempos y reinicios", '<div class="flex flex-col" style="gap:12px">' + rulesInner + '</div>');
+
+    html += infoSection("calentamiento", "heartPulse", "Calentamiento y prevención", "Antes y después de entrenar",
+      '<div style="color:' + C.chalk + ';font-weight:700;font-size:12px;margin-bottom:4px">Rutina de entrada en calor</div>' + ul(WARMUP) +
+      '<div style="color:' + C.chalk + ';font-weight:700;font-size:12px;margin:10px 0 4px">Prevención de lesiones</div>' + ul(INJURY_PREVENTION)
+    );
+
+    html += infoSection("nutricion", "droplet", "Nutrición e hidratación", "Antes, durante y después", ul(NUTRITION));
+    html += infoSection("equipo", "backpack", "Equipamiento", "Qué llevar a cada entrenamiento", ul(GEAR));
+
+    html += "</div>";
+    return html;
+  }
+};
+
+window.App = App;
+document.addEventListener("DOMContentLoaded", function () { App.init(); });
+if (document.readyState === "complete" || document.readyState === "interactive") { App.init(); }
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('service-worker.js').catch(function (err) {
+      console.warn('No se pudo registrar el service worker', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
