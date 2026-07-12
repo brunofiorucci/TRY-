@@ -5,7 +5,7 @@
    forzar la actualización del caché en los dispositivos de los
    usuarios. */
 
-const CACHE_NAME = 'tryplus-v2';
+const CACHE_NAME = 'tryplus-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
